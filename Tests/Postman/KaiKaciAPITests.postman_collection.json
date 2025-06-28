@@ -5,5 +5,148 @@
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "35027356"
 	},
-	"item": []
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Signup - Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201\", () => pm.response.to.have.status(201));\r",
+									"const data = pm.response.json();\r",
+									"pm.test(\"Email echoes back\", () => pm.expect(data.email).to.eql(pm.request.body.raw && JSON.parse(pm.request.body.raw).email));\r",
+									"pm.environment.set(\"user_id\", data.user_id);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"first_name\": \"John\",\r\n  \"last_name\": \"Doe\",\r\n  \"age\": 28,\r\n  \"sex\": \"Male\",\r\n  \"email\": \"john.doe@example.com\",\r\n  \"username\": \"johndoe\",\r\n  \"password\": \"Passw0rd!\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									"const data = pm.response.json();\r",
+									"pm.test(\"Username matches\", () => pm.expect(data.username).to.eql(\"johndoe\"));\r",
+									"// (optional) store entire user for later\r",
+									"pm.environment.set(\"auth_user\", JSON.stringify(data));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/login?user_identifier=johndoe&password=Passw0rd!",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							],
+							"query": [
+								{
+									"key": "user_identifier",
+									"value": "johndoe"
+								},
+								{
+									"key": "password",
+									"value": "Passw0rd!"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Invalid Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));\r",
+									"const error = pm.response.json();\r",
+									"pm.test(\"Error message present\", () => pm.expect(error).to.have.property(\"error\"));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/login?user_identifier=johndoe&password=WrongPass123",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							],
+							"query": [
+								{
+									"key": "user_identifier",
+									"value": "johndoe"
+								},
+								{
+									"key": "password",
+									"value": "WrongPass123"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
 }
