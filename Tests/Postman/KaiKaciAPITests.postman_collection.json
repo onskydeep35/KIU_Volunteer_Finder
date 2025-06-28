@@ -602,6 +602,65 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Load Application - 200 (valid id)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									"\r",
+									"const app = pm.response.json();\r",
+									"pm.test(\"Application links to correct event\", () =>\r",
+									"  pm.expect(app.event_id).to.eql(pm.environment.get(\"event_id\"))\r",
+									");\r",
+									"pm.test(\"Has Pending status\", () => pm.expect(app.status).to.eql(\"Pending\"));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/applications/load?entity_id=00039c0b-eb52-4c42-93e2-197dc7816edc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"applications",
+								"load"
+							],
+							"query": [
+								{
+									"key": "entity_id",
+									"value": "00039c0b-eb52-4c42-93e2-197dc7816edc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Load Application - 404 (unknown id)",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Update Application Status - pending <> Accepted",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			]
 		}
