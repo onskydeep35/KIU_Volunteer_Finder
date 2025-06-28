@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import type { Application } from '@/lib/api'
 
+const clsx = (...classes: (string | false | null | undefined)[]) =>
+  classes.filter(Boolean).join(' ')
+
 interface Props {
   application: Application
   onStatusChange?: (id: string, status: 'accepted' | 'denied' | 'canceled') => void
@@ -34,42 +37,61 @@ const VolunteerCard = ({ application, onStatusChange, questions }: Props) => {
   const questionAnswerPairs = getQuestionAnswerPairs()
 
   return (
-    <div className="border rounded p-4">
-      {/* Header Section */}
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
-          <h3 className="font-semibold">Application {application.application_id.slice(-8)}</h3>
-          <p className="text-sm text-gray-500">Status: {application.status}</p>
-          <p className="text-sm text-gray-500">Applicant: {application.applicant_user_id}</p>
-          <p className="text-sm text-gray-500">Submitted: {formatDate(application.submitted_at)}</p>
+    <article className="group relative flex flex-col gap-4 bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition">
+      <div className="flex items-center gap-4">
+        <img
+          src={'/avatar-placeholder.svg'}
+          alt=""
+          className="w-12 h-12 rounded-full object-cover bg-gray-100 flex-shrink-0"
+          loading="lazy"
+        />
+
+        <div className="flex-1 min-w-0">
+          <header className="flex items-center gap-2">
+            <h3 className="font-medium truncate">Application {application.application_id.slice(-8)}</h3>
+            <span
+              className={clsx(
+                'text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide',
+                application.status === 'pending' && 'bg-yellow-100 text-yellow-800',
+                application.status === 'accepted' && 'bg-green-100 text-green-700',
+                application.status === 'denied' && 'bg-red-100 text-red-700',
+                application.status === 'canceled' && 'bg-gray-200 text-gray-600'
+              )}
+            >
+              {application.status}
+            </span>
+          </header>
+          <p className="text-xs text-gray-500 truncate">
+            Submitted {formatDate(application.submitted_at)} · ID&nbsp;{application.application_id.slice(0, 8)}…
+          </p>
         </div>
-        
-        {/* Action Buttons */}
-        <div className="flex gap-2 ml-4">
+
+        <div className="flex gap-2">
           {application.status === 'pending' && (
             <>
               <button
                 onClick={() => onStatusChange?.(application.application_id, 'accepted')}
-                className="px-2 py-1 bg-support text-white rounded"
+                className="btn-accept"
+                aria-label="Accept application"
               >
                 Accept
               </button>
               <button
                 onClick={() => onStatusChange?.(application.application_id, 'denied')}
-                className="px-2 py-1 bg-accent text-white rounded"
+                className="btn-deny"
+                aria-label="Deny application"
               >
                 Deny
               </button>
             </>
           )}
-          {application.status !== 'canceled' && (
-            <button
-              onClick={() => onStatusChange?.(application.application_id, 'canceled')}
-              className="px-2 py-1 bg-gray-300 rounded"
-            >
-              Cancel
-            </button>
-          )}
+          <button
+            onClick={() => onStatusChange?.(application.application_id, 'canceled')}
+            className="btn-cancel"
+            aria-label="Cancel application"
+          >
+            Cancel
+          </button>
         </div>
       </div>
 
@@ -113,7 +135,7 @@ const VolunteerCard = ({ application, onStatusChange, questions }: Props) => {
           <p className="text-sm text-gray-500 italic">No application responses available</p>
         </div>
       )}
-    </div>
+    </article>
   )
 }
 

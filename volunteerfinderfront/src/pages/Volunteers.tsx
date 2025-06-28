@@ -138,41 +138,37 @@ const Volunteers = () => {
   })
 
   return (
-    <div className="p-4 max-w-screen-lg mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Volunteers</h1>
-        <div className="text-sm text-gray-600">
-          {applications.length} total applications
+    <section className="max-w-4xl mx-auto px-4 py-10 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl font-bold">Volunteers</h1>
+        <div className="flex flex-wrap gap-3">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="input-primary w-40"
+          >
+            <option value="all">All status</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="denied">Denied</option>
+            <option value="canceled">Canceled</option>
+          </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as 'name' | 'status')}
+            className="input-primary w-40"
+          >
+            <option value="name">Sort by ID</option>
+            <option value="status">Sort by Status</option>
+          </select>
+          <span className="text-sm text-gray-500 self-center">
+            {applications.length} total applications
+          </span>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 mb-4">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="input-primary w-40"
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="accepted">Accepted</option>
-          <option value="denied">Denied</option>
-          <option value="canceled">Canceled</option>
-        </select>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as 'name' | 'status')}
-          className="input-primary w-40"
-        >
-          <option value="name">Sort by ID</option>
-          <option value="status">Sort by Status</option>
-        </select>
-      </div>
-
-      {/* Applications List */}
       {sorted.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {sorted.map((app) => (
             <VolunteerCard
               key={app.application_id}
@@ -187,7 +183,7 @@ const Volunteers = () => {
           No applications match the current filter.
         </div>
       )}
-    </div>
+    </section>
   )
 }
 
