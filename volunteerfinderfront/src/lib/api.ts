@@ -60,8 +60,11 @@ export interface User {
 // API Functions
 export const api = {
   // Events
-  async getEvents(userId?: string): Promise<Event[]> {
-    const response = await fetch(`${API_BASE_URL}/events/loadMany?creator_id=${userId}`)
+  async getEvents(userId?: string, page = 1): Promise<Event[]> {
+    const params = new URLSearchParams()
+    if (userId) params.set('creator_id', userId)
+    if (page) params.set('page', String(page))
+    const response = await fetch(`${API_BASE_URL}/events/loadMany?${params.toString()}`)
     if (!response.ok) throw new Error('Failed to fetch events')
     return response.json()
   },

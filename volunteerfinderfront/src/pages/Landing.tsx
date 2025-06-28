@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import SearchInput from '@/components/common/SearchInput'
 import EventCard from '@/components/event/EventCard'
 import CreateEventCard from '@/components/event/CreateEventCard'
 import useDebounce from '@/lib/useDebounce'
 import { useSearchParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { api, type Event } from '@/lib/api'
+import { useAuth } from '@/lib/useAuth'
 
-const fetchEvents = async (): Promise<Event[]> => {
-  const res = await fetch(`/api/events/loadMany`)//this mistake was done on purpose
+const fetchEvents = async ({ pageParam = 1, userId = '' }): Promise<Event[]> => {
+  const res = await fetch(`/api/events/loadMany?creator_id=${userId}&page=${pageParam}`)
+  if (!res.ok) throw new Error('Failed to fetch events')
   return res.json()
 }
 
@@ -28,10 +30,37 @@ const Landing = () => {
     setParams(p, { replace: true })
   }, [debounced, category])
 
-  const { data: events = [], isLoading, error } = useQuery({
-    queryKey: ['events', debounced, category],
-    queryFn: () => fetchEvents(),
+  const { user } = useAuth()
+
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    error,
+  } = useInfiniteQuery({
+    queryKey: ['events', user?.user_id],
+    queryFn: ({ pageParam = 1 }) =>
+      fetchEvents({ pageParam, userId: user ? String(user.user_id) : '' }),
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.length === 10 ? pages.length + 1 : undefined,
   })
+
+  const events = data?.pages.flat() ?? []
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const el = loadMoreRef.current
+    if (!el) return
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasNextPage) {
+        fetchNextPage()
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [loadMoreRef, fetchNextPage, hasNextPage])
 
   if (isLoading) {
     return (
@@ -76,7 +105,7 @@ const Landing = () => {
       </section>
       <CreateEventCard />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      
+
         {Array.isArray(events) && events.length > 0 ? (
           events.map((event: Event) => (
             <EventCard event={event} key={event.event_id} />
@@ -93,7 +122,12 @@ const Landing = () => {
             </p>
           </div>
         )}
-        
+
+        <div ref={loadMoreRef} className="col-span-full h-1" />
+        {isFetchingNextPage && (
+          <div className="col-span-full text-center">Loading more...</div>
+        )}
+
       </div>
     </div>
   )
