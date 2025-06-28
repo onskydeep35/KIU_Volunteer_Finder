@@ -1,5 +1,13 @@
 {
+  "name": "kiu_volunteer_finder",
+  "version": "1.0.0",
   "dependencies": {
-    "all": "^0.0.0"
+    "alt": "^0.0.0"
+  },
+  "devDependencies": {
+    "cypress": "^14.5.0"
+  },
+  "scripts": {
+    "test:ui": "cypress run --browser chrome"
   }
 }
