@@ -17,9 +17,15 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status 201\", () => pm.response.to.have.status(201));\r",
-									"const data = pm.response.json();\r",
-									"pm.test(\"Email echoes back\", () => pm.expect(data.email).to.eql(pm.request.body.raw && JSON.parse(pm.request.body.raw).email));\r",
-									"pm.environment.set(\"user_id\", data.user_id);\r",
+									"\r",
+									"const reqBody = JSON.parse(pm.request.body.raw);\r",
+									"const resBody = pm.response.json();\r",
+									"\r",
+									"\r",
+									"pm.environment.set(\"username\", reqBody.username);\r",
+									"\r",
+									"\r",
+									"pm.test(\"Email echoes back\", () => pm.expect(resBody.email).to.eql(reqBody.email));\r",
 									""
 								],
 								"type": "text/javascript",
@@ -141,6 +147,76 @@
 									"key": "password",
 									"value": "WrongPass123"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Load User - 200 (valid id)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/load?user_identifier=JohnDoe",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"load"
+							],
+							"query": [
+								{
+									"key": "user_identifier",
+									"value": "JohnDoe"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Random User - 200",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									"const data = pm.response.json();\r",
+									"pm.test(\"User object has username\", () => pm.expect(data).to.have.property(\"username\"));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/random",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"random"
 							]
 						}
 					},
