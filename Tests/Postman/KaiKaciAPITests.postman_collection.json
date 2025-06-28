@@ -498,6 +498,112 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Applications",
+			"item": [
+				{
+					"name": "Create Application - Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 201\", () => pm.response.to.have.status(201));\r",
+									"\r",
+									"const res = pm.response.json();\r",
+									"pm.environment.set(\"application_id\", res.application_id);   // save for later\r",
+									"\r",
+									"pm.test(\"Links to correct event\", () =>\r",
+									"  pm.expect(res.event_id).to.eql(pm.environment.get(\"event_id\"))\r",
+									");\r",
+									"pm.test(\"Status pending\", () => pm.expect(res.status).to.eql(\"Pending\"));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"event_id\": \"{{event_id}}\",\r\n  \"user_identifier\": \"johndoe\",          // or email if API expects that\r\n  \"answers\": [\r\n    { \"question\": \"Why join?\", \"answer\": \"Love the environment\" },\r\n    { \"question\": \"Previous experience?\", \"answer\": \"Coastal cleanup 2024\" }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/applications/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"applications",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Application - Happy Path Duplicate (Expect 400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400\", () => pm.response.to.have.status(400));\r",
+									"pm.expect(pm.response.json()).to.have.property(\"error\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"event_id\": \"{{event_id}}\",\r\n  \"user_identifier\": \"johndoe\",          // or email if API expects that\r\n  \"answers\": [\r\n    { \"question\": \"Why join?\", \"answer\": \"Love the environment\" },\r\n    { \"question\": \"Previous experience?\", \"answer\": \"Coastal cleanup 2024\" }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/applications/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"applications",
+								"create"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
