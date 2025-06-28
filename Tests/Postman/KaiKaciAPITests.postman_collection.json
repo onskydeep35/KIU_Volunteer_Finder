@@ -398,6 +398,104 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Update Event - Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									"const res = pm.response.json();\r",
+									"pm.test(\"Title updated\", () => pm.expect(res.title).to.eql(\"Beach Cleanup (Updated)\"));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"entity_id\": \"{{event_id}}\",\r\n  \"title\": \"Beach Cleanup (Updated)\",\r\n  \"description\": \"Bring gloves and trash bags!\",\r\n  \"location\": \"Batumi, Georgia\",\r\n  \"date\": \"2025-08-15T09:00:00Z\",\r\n  \"image_url\": \"https://example.com/beach_v2.jpg\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/events/update",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Event - Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									"pm.test(\"Success flag true\", () => {\r",
+									"  const res = pm.response.json();\r",
+									"  pm.expect(res.success || res.deleted).to.be.true;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "json { \"entity_id\": \"{{event_id}}\" }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/events/delete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"delete"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
