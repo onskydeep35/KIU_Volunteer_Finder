@@ -53,6 +53,29 @@ export async function updateCreatorEventsList(
   console.log(`✅ Updated user='${creator_user_id}' events with event=${event_id}`);
 }
 
+export async function getTopRankedUsers(
+  app: FastifyInstance,
+  amount: number
+): Promise<User[]> {
+  const usersSnap = await app.db.collection('users')
+    .orderBy('score', 'desc')
+    .limit(amount)
+    .get();
+
+  if (usersSnap.empty) {
+    console.log('No users found');
+    return [];
+  }
+
+  const topUsers: User[] = [];
+  usersSnap.forEach(doc => {
+    topUsers.push(doc.data() as User);
+  });
+
+  console.log(`✅ Retrieved top ranked users: ${topUsers.length}`);
+  return topUsers;
+}
+
 export async function removeApplicationFromUser(
   app: FastifyInstance,
   application: Application,
@@ -70,4 +93,20 @@ export async function removeApplicationFromUser(
   });
 
   console.log(`✅ Removed application='${application.application_id}' from user=${application.applicant_user_id}`);
+}
+
+let done = false;
+
+export async function giveAllUsers0Score(app: FastifyInstance) {
+  if (done) return;
+  done = true;
+
+  const usersSnap = await app.db.collection('users').get();
+  usersSnap.forEach(async (doc) => {
+    const user = doc.data() as User;
+    if (!user.score) {
+      await app.db.collection('users').doc(user.user_id).update({ score: 0 });
+      console.log(`✅ Set score=0 for user=${user.user_id}`);
+    }
+  });
 }

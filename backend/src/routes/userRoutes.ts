@@ -5,7 +5,7 @@ import { SignupRequest } from '../types/requests/userSignUpRequest';
 import { LoginRequest } from '../types/requests/userLogInRequest';
 import { EntityUpdateStatusResponse } from '../types/responses/entityUpdateStatusResponse';
 import { getEntityById} from '../services/entityService';
-import { createUser } from '../services/userService';
+import { createUser, getTopRankedUsers, giveAllUsers0Score } from '../services/userService';
 import bcrypt from 'bcrypt';
 
 const users: FastifyPluginAsync = async (app) => {
@@ -43,6 +43,35 @@ const users: FastifyPluginAsync = async (app) => {
       } catch (err: any) {
         console.error('❌ Error in /signup:', err);
         return reply.code(500).send({ message: 'Internal error', entity_id: '' });
+      }
+    }
+  );
+
+  app.get(
+    '/scorereset',
+    async (req, reply) => {
+      try {
+        await giveAllUsers0Score(app);
+
+        return reply.code(200).send({ message: 'Scores reset successfully' });
+      } catch (err: any) {
+        console.error('❌ Error in /scorereset:', err);
+        return reply.code(500).send({ message: 'Failed to reset scores' });
+      }
+    }
+  );
+
+  app.get(
+    '/top',
+    async (req, reply) => {
+      try {
+        const amount = req.query.amount ? parseInt(req.query.amount as string, 10) : 10;
+
+        const users = await getTopRankedUsers(app, amount);
+        return reply.code(200).send(users);
+      } catch (err: any) {
+        console.error('❌ Error in /top:', err);
+        return reply.code(500).send({ message: 'Failed to fetch top users' });
       }
     }
   );

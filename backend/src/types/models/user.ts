@@ -9,4 +9,5 @@ export interface User {
   password: string;
   applications: string[];
   events: string[];
+  score: number;
 }
