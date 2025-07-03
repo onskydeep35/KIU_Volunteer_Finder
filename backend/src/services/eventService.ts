@@ -39,7 +39,11 @@ export async function loadEvents(
 
   // ── exact-match filters ─────────────────────────────────────────────
   if (filters.creator_id) q = q.where('creator_user_id', '==', filters.creator_id);
-  
+  else if (filters.page) {
+    const pageSize = 10;
+    const startAt = (filters.page - 1) * pageSize;
+    q = q.orderBy('created_at', 'desc').offset(startAt).limit(pageSize);
+  }
   
   // ── sort by hits descending ───────────────────────────────────────
   q = q.orderBy('hits', 'desc');
