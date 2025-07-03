@@ -5,8 +5,27 @@ import { updateCreatorEventsList } from './userService';
 import { LoadEventsRequest } from '../types/requests/loadEventsRequest';
 import { CreateEventRequest } from '../types/requests/createEventRequest';
 import { UpdateEventRequest } from '../types/requests/updateEventRequest';
-import { getEntityById } from './entityService';
 
+export async function prefixSearchEventsByTitle(
+  app: FastifyInstance,
+  titlePrefix: string
+): Promise<Event[]> {
+    let q: FirebaseFirestore.Query = app.db.collection('events');
+
+    q = q.orderBy('title')
+      .startAt(titlePrefix)
+      .endAt(titlePrefix + '\uf8ff');
+
+    const snapshot = await q.get();
+
+    if (snapshot.empty) {
+        return [];
+    }
+
+    const events = snapshot.docs.map(doc => doc.data() as Event);
+
+    return events;
+}
 
 export async function loadEvents(
   app: FastifyInstance,

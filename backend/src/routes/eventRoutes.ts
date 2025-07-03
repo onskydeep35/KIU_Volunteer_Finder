@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { CreateEventRequest } from '../types/requests/createEventRequest';
 import { EntityUpdateStatusResponse } from '../types/responses/entityUpdateStatusResponse';
 import { LoadEntityRequest}  from '../types/requests/loadEntityRequest';
-import { createEvent } from '../services/eventService';
+import { createEvent, prefixSearchEventsByTitle } from '../services/eventService';
 import { getEntityById} from '../services/entityService';
 import { loadEvents }          from '../services/eventService';
 import { LoadEventsRequest }   from '../types/requests/loadEventsRequest';
@@ -11,6 +11,7 @@ import { Application } from '../types/models/application';
 import { removeApplicationFromUser } from '../services/userService';
 import { UpdateEventRequest } from '../types/requests/updateEventRequest';
 import { updateEvent } from '../services/eventService';
+import { SearchEventsByTitleRequest } from '../types/requests/searchEventsByTitleRequest';
 
 
 
@@ -40,6 +41,26 @@ const events: FastifyPluginAsync = async (app) => {
     //     }
     //   }
     // );
+
+    app.get<{ Querystring: SearchEventsByTitleRequest; Reply: Event[] }>(
+      '/search',
+      async (req, reply) => {
+        try {
+          const titlePrefix = req.query.title_prefix || '';
+          if (!titlePrefix) {
+            return reply.code(400).send([]);
+          }
+
+          const events = await prefixSearchEventsByTitle(app, titlePrefix);
+          
+          return reply.send(events);
+        } catch (err: any) {
+          console.error('❌ Error in /events/search:', err);
+          return reply.code(500).send([]);
+        }
+      }
+    );
+
 
     app.get<{ Querystring: LoadEventsRequest; Reply: Event[] }>(
       '/loadMany',
