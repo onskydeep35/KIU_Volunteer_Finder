@@ -40,9 +40,7 @@ const icons = {
   ),
   handheart: (
     <>
-      <path d="M9 11l3-3 3 3" />
-      <path d="M12 8v8" />
-      <path d="M5 15h14" />
+      <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
     </>
   ),
 } as const
@@ -82,6 +80,7 @@ const InfoRow = ({
 )
 
 const renderMarkdown = (md: string) => {
+  if (!md) return ''
   const escaped = md.replace(/</g, '&lt;').replace(/>/g, '&gt;')
   const withBold = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   const withItalic = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -93,48 +92,98 @@ const renderMarkdown = (md: string) => {
 
 const EventDetail = () => {
   const { id } = useParams()
-  const eventId = String(id!)
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [open, setOpen] = useState(false)
   
-  // Fixed: Use the proper API call instead of hardcoded fetch
+  // Ensure we have an ID
+  if (!id) {
+    return <div className="text-center p-8 text-red-600">No event ID provided</div>
+  }
+
+  const eventId = String(id)
+  
+  // Use the proper API call
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', eventId],
     queryFn: () => api.getEvent(eventId),
+    retry: 1,
   })
 
   if (isLoading) {
-    return <div className="text-center p-8">Loading event...</div>
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse">Loading event...</div>
+        </div>
+      </div>
+    )
   }
 
-  if (error || !event) {
-    return <div className="text-center p-8 text-red-600">Event not found</div>
+  if (error) {
+    console.error('Error loading event:', error)
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center p-8 text-red-600">
+          <h2 className="text-xl font-semibold mb-2">Error loading event</h2>
+          <p>Please try again later.</p>
+          <button 
+            onClick={() => navigate('/events')}
+            className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+          >
+            Back to Events
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center p-8 text-red-600">
+          <h2 className="text-xl font-semibold mb-2">Event not found</h2>
+          <button 
+            onClick={() => navigate('/events')}
+            className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+          >
+            Back to Events
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    } catch (e) {
+      return 'Invalid date'
+    }
   }
 
   // Determine status based on dates
   const getStatus = (startDate: string, endDate: string) => {
-    const now = new Date()
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    try {
+      const now = new Date()
+      const start = new Date(startDate)
+      const end = new Date(endDate)
 
-    if (now < start) return 'open'
-    if (now > end) return 'closed'
-    return 'open'
+      if (now < start) return 'open'
+      if (now > end) return 'closed'
+      return 'open'
+    } catch (e) {
+      return 'unknown'
+    }
   }
 
   const status = getStatus(event.start_date, event.end_date)
-
-  const { user } = useAuth()
-  const navigate = useNavigate()
   const isCreator = user && String(user.user_id) === String(event.user_id)
 
   const onRegister = () => setOpen(true)
@@ -147,8 +196,12 @@ const EventDetail = () => {
       <section className="relative w-full h-64 md:h-80">
         <img
           src={event.image_url || '/placeholder-event.svg'}
-          alt=""
+          alt={event.org_title || 'Event image'}
           className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            target.src = '/placeholder-event.svg'
+          }}
         />
         <div className="absolute inset-0 bg-black/40" />
 
@@ -162,6 +215,7 @@ const EventDetail = () => {
                 status === 'open' && 'bg-[#006C67]',
                 status === 'full' && 'bg-[#FF6B6B]',
                 status === 'closed' && 'bg-gray-500',
+                status === 'unknown' && 'bg-gray-400',
               )}
             >
               {status}
@@ -187,32 +241,50 @@ const EventDetail = () => {
             <h3 className="text-lg font-semibold">Event info</h3>
 
             <InfoRow icon="calendar" label="Date" value={formatDate(event.start_date)} />
-            <InfoRow icon="map-pin" label="Location" value={`${event.city}, ${event.region}, ${event.country}`} />
+            <InfoRow 
+              icon="map-pin" 
+              label="Location" 
+              value={`${event.city || ''}, ${event.region || ''}, ${event.country || ''}`} 
+            />
 
-            <button
-              className="btn-primary w-full text-lg flex items-center justify-center gap-2"
-              disabled={status !== 'open'}
-              onClick={onRegister}
-            >
-              <Icon name="handheart" className="w-5 h-5" /> Register as Volunteer
-            </button>
+            {status === 'open' && (
+              <button
+                className="btn-primary w-full text-lg flex items-center justify-center gap-2"
+                onClick={onRegister}
+              >
+                <Icon name="handheart" className="w-5 h-5" /> Register as Volunteer
+              </button>
+            )}
+
+            {status === 'closed' && (
+              <div className="text-center py-4 text-gray-600">
+                Registration is closed
+              </div>
+            )}
           </div>
 
           {isCreator && (
             <div className="flex flex-col gap-3">
-              <button onClick={onEdit} className="btn-secondary">Edit Event</button>
-              <button onClick={onViewVolunteers} className="btn-tertiary">View Volunteers</button>
+              <button onClick={onEdit} className="btn-secondary">
+                Edit Event
+              </button>
+              <button onClick={onViewVolunteers} className="btn-tertiary">
+                View Volunteers ({event.applications?.length || 0})
+              </button>
             </div>
           )}
         </aside>
       </section>
 
-      <ApplicationModal
-        open={open}
-        onClose={() => setOpen(false)}
-        eventId={event.event_id}
-        questions={event.volunteer_form}
-      />
+      {/* Application Modal */}
+      {event.volunteer_form && (
+        <ApplicationModal
+          open={open}
+          onClose={() => setOpen(false)}
+          eventId={event.event_id}
+          questions={event.volunteer_form}
+        />
+      )}
     </main>
   )
 }
