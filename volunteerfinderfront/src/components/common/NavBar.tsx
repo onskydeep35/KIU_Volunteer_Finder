@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import AuthModal from '@/components/common/AuthModal'
 import { useAuth } from '@/lib/useAuth'
-import useDebounce from '@/lib/useDebounce'
 import DropdownMenu from './DropdownMenu'
 
 const NavBar = () => {
@@ -11,17 +10,6 @@ const NavBar = () => {
   const [authOpen, setAuthOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const { user, logout } = useAuth()
-  const [params, setParams] = useSearchParams()
-  const [search, setSearch] = useState(params.get('q') ?? '')
-  const debounced = useDebounce(search, 300)
-
-  // update url param when debounced search changes
-  useEffect(() => {
-    const p = new URLSearchParams(params)
-    if (debounced) p.set('q', debounced)
-    else p.delete('q')
-    setParams(p, { replace: true })
-  }, [debounced])
 
   return (
     <nav
