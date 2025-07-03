@@ -9,10 +9,10 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { api, type Event } from '@/lib/api'
 import { useAuth } from '@/lib/useAuth'
 
-const fetchEvents = async ({ pageParam = 1, userId = '' }): Promise<Event[]> => {
-  const res = await fetch(`/api/events/loadMany?creator_id=${userId}&page=${pageParam}`)
-  if (!res.ok) throw new Error('Failed to fetch events')
-  return res.json()
+const fetchEvents = async ({ pageParam = 1 }): Promise<Event[]> => {
+  const res = await api.getEvents('', pageParam);
+
+  return res;
 }
 
 const Landing = () => {
