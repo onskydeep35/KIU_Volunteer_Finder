@@ -11,8 +11,6 @@ export async function prefixSearchEventsByTitle(
   titlePrefix: string
 ): Promise<Event[]> {
     let q: FirebaseFirestore.Query = app.db.collection('events');
-    q = q.where('completed', '!=', true); // should not search completed events
-
     q = q.orderBy('org_title')
       .startAt(titlePrefix)
       .endAt(titlePrefix + '\uf8ff');
@@ -24,7 +22,8 @@ export async function prefixSearchEventsByTitle(
         return [];
     }
 
-    const events = snapshot.docs.map(doc => doc.data() as Event);
+    let events = snapshot.docs.map(doc => doc.data() as Event);
+    events = events.filter(event => event.completed !== true);
 
     return events;
 }
@@ -40,8 +39,7 @@ export async function loadEvents(
 
   // ── exact-match filters ─────────────────────────────────────────────
   if (filters.creator_id) q = q.where('creator_user_id', '==', filters.creator_id);
-  if (filters.fetch_completed === true) q = q.where('completed', '==', true);
-  else q = q.where('completed', '==', false);
+  
   
   // ── sort by hits descending ───────────────────────────────────────
   q = q.orderBy('hits', 'desc');
@@ -54,7 +52,11 @@ export async function loadEvents(
     return [];
   }
 
-  return snap.docs.map(d => d.data() as Event);
+  let events = snap.docs.map(d => d.data() as Event);
+  if (filters.fetch_completed) events = events.filter(event => event.completed === true);
+  else events = events.filter(event => event.completed !== true);
+
+  return events;
 }
 
 export async function createEvent(
@@ -76,6 +78,7 @@ export async function createEvent(
     country: createRequest.country,
     region: createRequest.region,
     city: createRequest.city,
+    completed: false
   };
 
   await app.db.collection('events').doc(event.event_id).set(event);
