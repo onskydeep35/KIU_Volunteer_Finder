@@ -55,6 +55,7 @@ export interface User {
   password: string;
   applications: string[];
   events: string[];
+  score: number;
 }
 
 // API Functions
@@ -182,6 +183,15 @@ export const api = {
       body: JSON.stringify(req)
     })
     if (!response.ok) throw new Error('Failed to register user')
+    return response.json()
+  },
+
+  async getTopRankedUsers(amount: number = 10): Promise<User[]> {
+    const params = new URLSearchParams()
+    params.set('amount', String(amount))
+    
+    const response = await fetch(`${API_BASE_URL}/users/top?${params.toString()}`)
+    if (!response.ok) throw new Error('Failed to fetch top users')
     return response.json()
   }
 }

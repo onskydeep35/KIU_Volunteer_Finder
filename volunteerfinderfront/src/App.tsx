@@ -8,7 +8,7 @@ import EditEvent from '@/pages/EditEvent'
 import MyEvents from '@/pages/MyEvents'
 import Volunteers from '@/pages/Volunteers'
 import MySubmissions from '@/pages/MySubmissions'
-
+import RankingsPage from './pages/VolunteerRankings'
 
 function App() {
   return (
@@ -22,6 +22,7 @@ function App() {
           <Route path="/create-event" element={<CreateEvent />} />
           <Route path="/myevents" element={<MyEvents />} />
           <Route path="/mysubmissions" element={<MySubmissions />} />
+          <Route path="/rankings" element={<RankingsPage />} />
           <Route
             path="/events/:id/volunteers"
             element={<Volunteers />}
@@ -31,7 +32,6 @@ function App() {
       </main>
       <Footer />
     </div>
-
   )
 }
 
