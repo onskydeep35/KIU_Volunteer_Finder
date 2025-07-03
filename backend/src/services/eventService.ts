@@ -35,26 +35,25 @@ export async function loadEvents(
 ): Promise<Event[]> {
   let q: FirebaseFirestore.Query = app.db.collection('events');
 
+  console.log('Loading events with filters of creator_id:', filters.creator_id);
+  console.log('Loading events with filters of fetch_completed:', filters.fetch_completed);
+
   // ── exact-match filters ─────────────────────────────────────────────
   if (filters.creator_id) q = q.where('creator_user_id', '==', filters.creator_id);
   if (filters.fetch_completed === true) q = q.where('completed', '==', true);
-  else q = q.where('completed', '!=', true);
-  /*
-  if (filters.org_title)  q = q.where('org_title',       '==', filters.org_title);
-  if (filters.category)   q = q.where('category',        '==', filters.category);
-  if (filters.country)    q = q.where('country',         '==', filters.country);
-
-  // ── range filters ──────────────────────────────────────────────────
-  if (filters.hits_min)
-                          q = q.where('hits', '>=', Number(filters.hits_min));
-  if (filters.hits_max)
-                          q = q.where('hits', '<=', Number(filters.hits_max));*/
-                        
+  else q = q.where('completed', '==', false);
+  
   // ── sort by hits descending ───────────────────────────────────────
   q = q.orderBy('hits', 'desc');
 
   // ── run query & map to typed objects ───────────────────────────────
   const snap = await q.get();
+
+  if (snap.empty) {
+    console.log('No matching events found');
+    return [];
+  }
+
   return snap.docs.map(d => d.data() as Event);
 }
 

@@ -109,6 +109,19 @@ export const api = {
     return response.json()
   },
 
+  async completeEvent(eventId: string): Promise<EntityUpdateStatusResponse> {
+    const params = new URLSearchParams()
+    params.set('event_id', eventId)
+    
+    const response = await fetch(`${API_BASE_URL}/events/complete?${params.toString()}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_id: eventId })
+    })
+    if (!response.ok) throw new Error('Failed to complete event')
+    return response.json()
+  },
+
   // Applications
   async loadApplication(entityId: string): Promise<Application> {
     const response = await fetch(`${API_BASE_URL}/applications/load?entity_id=${encodeURIComponent(entityId)}`)

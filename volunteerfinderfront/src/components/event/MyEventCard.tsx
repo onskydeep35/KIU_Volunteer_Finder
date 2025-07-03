@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { Event } from '@/lib/api'
+import CompleteEventButton from './CompleteEventButton'
 
 interface Props {
   event: Event
@@ -46,6 +47,7 @@ const MyEventCard = ({ event }: Props) => {
         >
           Manage Volunteers
         </button>
+        <CompleteEventButton eventId={event.event_id} onEventCompleted={() => navigate('/events')} />
       </footer>
     </article>
   )

@@ -49,7 +49,7 @@ const events: FastifyPluginAsync = async (app) => {
           
           return reply.send(paginatedEvents);
         } catch (err: any) {
-          console.error('❌ Error in /events/list:', err);
+          console.error('❌ Error in /events/loadMany:', err);
           return reply.code(500).send([]);
         }
       }
