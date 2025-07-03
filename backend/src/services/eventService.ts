@@ -11,6 +11,7 @@ export async function prefixSearchEventsByTitle(
   titlePrefix: string
 ): Promise<Event[]> {
     let q: FirebaseFirestore.Query = app.db.collection('events');
+    q = q.where('completed', '!=', true); // should not search completed events
 
     q = q.orderBy('org_title')
       .startAt(titlePrefix)
@@ -36,6 +37,8 @@ export async function loadEvents(
 
   // ── exact-match filters ─────────────────────────────────────────────
   if (filters.creator_id) q = q.where('creator_user_id', '==', filters.creator_id);
+  if (filters.fetch_completed === true) q = q.where('completed', '==', true);
+  else q = q.where('completed', '!=', true);
   /*
   if (filters.org_title)  q = q.where('org_title',       '==', filters.org_title);
   if (filters.category)   q = q.where('category',        '==', filters.category);
@@ -102,5 +105,44 @@ export async function updateEvent(
     description: request.description, 
     volunteer_form: request.volunteer_form,  
   });
+  return true;
+}
+
+export async function completeEvent(
+  app: FastifyInstance,
+  event_id: string
+): Promise<boolean> {
+  const ref = app.db.collection('events').doc(event_id);
+  const snap = await ref.get();
+
+  if (!snap.exists) {
+    console.log("event doesn't exist")
+    return false;
+  }
+
+  await ref.update({'completed': true});
+
+  // add score to each volunteer
+  snap.data()!.applications.forEach(async (applicationId: string) => {
+    const applicationRef = app.db.collection('applications').doc(applicationId);
+    const applicationSnap = await applicationRef.get();
+
+    if (applicationSnap.exists) {
+      const applicationData = applicationSnap.data();
+      if (applicationData && applicationData.user_id && applicationData.status === 'accepted') {
+        // Increment user's score
+        const userRef = app.db.collection('users').doc(applicationData.user_id);
+        const user = await userRef.get();
+        const score = user.data()!.score || 0;
+        await userRef.update({
+          score: score + 1
+        });
+        console.log(`Updated score for user ${user.data()!.email}: ${score + 1}`);
+      }
+    }
+  });
+
+  console.log(`Event ${event_id} marked as completed and scores updated for volunteers.`);
+
   return true;
 }

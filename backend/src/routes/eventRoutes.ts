@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { CreateEventRequest } from '../types/requests/createEventRequest';
 import { EntityUpdateStatusResponse } from '../types/responses/entityUpdateStatusResponse';
 import { LoadEntityRequest}  from '../types/requests/loadEntityRequest';
-import { createEvent, prefixSearchEventsByTitle } from '../services/eventService';
+import { completeEvent, createEvent, prefixSearchEventsByTitle } from '../services/eventService';
 import { getEntityById} from '../services/entityService';
 import { loadEvents }          from '../services/eventService';
 import { LoadEventsRequest }   from '../types/requests/loadEventsRequest';
@@ -175,10 +175,35 @@ const events: FastifyPluginAsync = async (app) => {
 
         return reply.code(200).send({ message: message, entity_id: `${req.body.event_id}` });
       } catch (err: any) {
-        console.error('❌ Error in /delete:', err);
+        console.error('❌ Error in /update:', err);
         const status = err.message.includes('not found') ? 404 : 500;
         return reply.code(status).send({
-          message: 'Failed to delete event',
+          message: 'Failed to update event',
+          entity_id: '',
+        });
+      }
+    }
+  );
+
+  app.post<{ Reply: EntityUpdateStatusResponse }>(
+    '/complete',
+    async (req, reply) => {
+      try {
+        const event_id = req.query.event_id;
+
+        if (!event_id) {
+          return reply.code(400).send({ message: 'Missing event ID', entity_id: '' });
+        }
+        
+        const eventCompleted = await completeEvent(app, event_id);
+        const message = eventCompleted ? `Completed event with id=${event_id}` : `Not found event with id=${event_id} to complete`;
+
+        return reply.code(200).send({ message: message, entity_id: `${event_id}` });
+      } catch (err: any) {
+        console.error('❌ Error in /complete:', err);
+        const status = err.message.includes('not found') ? 404 : 500;
+        return reply.code(status).send({
+          message: 'Failed to complete event',
           entity_id: '',
         });
       }

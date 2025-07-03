@@ -7,4 +7,5 @@ export interface LoadEventsRequest {
   country?: string;
   page?: number;
   limit?: number;
+  fetch_completed?: boolean; // Optional, defaults to false
 }
