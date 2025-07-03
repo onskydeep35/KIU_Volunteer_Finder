@@ -12,13 +12,14 @@ export async function prefixSearchEventsByTitle(
 ): Promise<Event[]> {
     let q: FirebaseFirestore.Query = app.db.collection('events');
 
-    q = q.orderBy('title')
+    q = q.orderBy('org_title')
       .startAt(titlePrefix)
       .endAt(titlePrefix + '\uf8ff');
 
     const snapshot = await q.get();
 
     if (snapshot.empty) {
+        console.log('No matching events found that start with:', titlePrefix);
         return [];
     }
 

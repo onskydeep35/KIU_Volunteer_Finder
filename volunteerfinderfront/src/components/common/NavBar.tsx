@@ -4,7 +4,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import AuthModal from '@/components/common/AuthModal'
 import { useAuth } from '@/lib/useAuth'
 import useDebounce from '@/lib/useDebounce'
-import SearchInput from './SearchInput'
 import DropdownMenu from './DropdownMenu'
 
 const NavBar = () => {
@@ -37,11 +36,6 @@ const NavBar = () => {
         className="w-66 h-18 object-contain rounded"
       />
       </Link>
-      <SearchInput
-        value={search}
-        onChange={setSearch}
-        className="block lg:hidden w-full max-w-lg mx-auto md:mx-0"
-      />
       <button
         className="sm:hidden p-2"
         aria-label="Open menu"
@@ -123,7 +117,6 @@ const NavBar = () => {
           >
             ×
           </button>
-          <SearchInput value={search} onChange={setSearch} className="w-full" />
           {user ? (
             <button
               onClick={() => {

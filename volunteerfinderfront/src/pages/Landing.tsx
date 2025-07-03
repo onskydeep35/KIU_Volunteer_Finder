@@ -1,10 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import SearchInput from '@/components/common/SearchInput'
 import EventCard from '@/components/event/EventCard'
 import CreateEventCard from '@/components/event/CreateEventCard'
-import useDebounce from '@/lib/useDebounce'
-import { useSearchParams } from 'react-router-dom'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { api, type Event } from '@/lib/api'
 import { useAuth } from '@/lib/useAuth'
@@ -16,19 +14,9 @@ const fetchEvents = async ({ pageParam = 1 }): Promise<Event[]> => {
 }
 
 const Landing = () => {
-  const [params, setParams] = useSearchParams()
-  const [search, setSearch] = useState(params.get('q') ?? '')
-  const [category, setCategory] = useState(params.get('category') ?? '')
-  const debounced = useDebounce(search, 300)
-
-  useEffect(() => {
-    const p = new URLSearchParams(params)
-    if (debounced) p.set('q', debounced)
-    else p.delete('q')
-    if (category) p.set('category', category)
-    else p.delete('category')
-    setParams(p, { replace: true })
-  }, [debounced, category])
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('')
+  const [searchedEvents, setSearchedEvents] = useState<Event[]>([])
 
   const { user } = useAuth()
 
@@ -48,7 +36,15 @@ const Landing = () => {
       lastPage.length === 10 ? pages.length + 1 : undefined,
   })
 
-  const events = data?.pages.flat() ?? []
+  const handleSetSearch = useCallback((value: string) => {
+    setSearch(value);
+  }, []);
+
+  const handleSetSearchedEvents = useCallback((events: Event[]) => {
+    setSearchedEvents(events);
+  }, []);
+
+  const events = search ? searchedEvents : data?.pages.flat() ?? []
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -87,7 +83,8 @@ const Landing = () => {
         <div className="hidden lg:flex flex-col sm:flex-row justify-center gap-4 mt-6">
           <SearchInput
             value={search}
-            onChange={setSearch}
+            onChange={handleSetSearch}
+            onEventsFound={handleSetSearchedEvents}
             className="w-full max-w-lg mx-auto"
           />
           <select

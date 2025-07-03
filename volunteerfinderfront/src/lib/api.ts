@@ -59,12 +59,26 @@ export interface User {
 
 // API Functions
 export const api = {
-  // Events
+  async searchEvents(titlePrefix: string): Promise<Event[]> {
+    const params = new URLSearchParams()
+    params.set('title_prefix', titlePrefix)
+    
+    const response = await fetch(`${API_BASE_URL}/events/search?${params.toString()}`)
+
+    console.log("Search URL:", `${API_BASE_URL}/events/search?${params.toString()}`)
+
+    if (!response.ok) throw new Error('Failed to fetch events')
+    return response.json()
+  },
+
   async getEvents(userId?: string, page = 1): Promise<Event[]> {
     const params = new URLSearchParams()
     if (userId) params.set('creator_id', userId)
     if (page) params.set('page', String(page))
     const response = await fetch(`${API_BASE_URL}/events/loadMany?${params.toString()}`)
+
+    console.log("Get URL:", `${API_BASE_URL}/events/loadMany?${params.toString()}`)
+
     if (!response.ok) throw new Error('Failed to fetch events')
     return response.json()
   },
