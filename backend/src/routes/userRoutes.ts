@@ -1,11 +1,11 @@
-import { FastifyPluginAsync } from 'fastify'
+import { FastifyBaseLogger, FastifyInstance, FastifyPluginAsync, FastifyTypeProviderDefault, RawServerDefault } from 'fastify'
 import { LoadEntityRequest}  from '../types/requests/loadEntityRequest';
 import { User } from '../types/models/user';
 import { SignupRequest } from '../types/requests/userSignUpRequest';
 import { LoginRequest } from '../types/requests/userLogInRequest';
 import { EntityUpdateStatusResponse } from '../types/responses/entityUpdateStatusResponse';
 import { getEntityById} from '../services/entityService';
-import { createUser, getTopRankedUsers, giveAllUsers0Score } from '../services/userService';
+import { createUser, getTopRankedUsers, giveAllUsers0Score, updateUserBadges } from '../services/userService';
 import bcrypt from 'bcrypt';
 
 const users: FastifyPluginAsync = async (app) => {
@@ -43,6 +43,30 @@ const users: FastifyPluginAsync = async (app) => {
       } catch (err: any) {
         console.error('❌ Error in /signup:', err);
         return reply.code(500).send({ message: 'Internal error', entity_id: '' });
+      }
+    }
+  );
+
+  app.post(
+    '/badgerefresh',
+    async (req, reply) => {
+      try {
+        const userId = req.body.user_id;
+
+        const snapshot = await app.db.collection('users').doc(userId).get();
+
+        if (!snapshot.exists) {
+          return reply.code(404).send({ message: 'User not found' });
+        }
+
+        const user = snapshot.data() as User;
+
+        const updated = await updateUserBadges(app, user);
+
+        return reply.code(200).send({ message: 'Badges refreshed successfully', updated: updated });
+      } catch (err: any) {
+        console.error('❌ Error in /badgerefresh:', err);
+        return reply.code(500).send({ message: 'Failed to refresh badges' });
       }
     }
   );

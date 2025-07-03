@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 import { Event } from '../types/models/event';
-import { updateCreatorEventsList } from './userService';
+import { updateCreatorEventsList, updateCreatorOnEventCompletion } from './userService';
 import { LoadEventsRequest } from '../types/requests/loadEventsRequest';
 import { CreateEventRequest } from '../types/requests/createEventRequest';
 import { UpdateEventRequest } from '../types/requests/updateEventRequest';
@@ -123,6 +123,7 @@ export async function completeEvent(
   }
 
   await ref.update({'completed': true});
+  await updateCreatorOnEventCompletion(app, snap.data()!.creator_user_id);
 
   // add score to each volunteer
   snap.data()!.applications.forEach(async (applicationId: string) => {

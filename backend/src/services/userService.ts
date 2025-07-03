@@ -1,9 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { v4 as uuidv4 } from 'uuid';
-import { User } from '../types/models/user';
+import { Badge, User } from '../types/models/user';
 import { Application } from '../types/models/application';
 import bcrypt from 'bcrypt';
+import { badgeRules } from './badgeRules';
 
 export async function createUser(
   app: FastifyInstance,
@@ -52,6 +53,26 @@ export async function updateCreatorEventsList(
   });
 
   console.log(`✅ Updated user='${creator_user_id}' events with event=${event_id}`);
+}
+
+export async function updateCreatorOnEventCompletion(
+  app: FastifyInstance,
+  creator_user_id: string
+): Promise<void> {
+  const userRef = app.db.collection('users').doc(creator_user_id);
+  const userSnap = await userRef.get();
+  if (!userSnap.exists) {
+    console.log("Creator user id doesn't exist");
+    return;
+  }
+
+  const user = userSnap.data() as User;
+  const completedEventsAmount = user.completed_events || 0;
+  await userRef.update({
+    completed_events: completedEventsAmount + 1
+  });
+
+  console.log(`✅ Updated completed events for user='${creator_user_id}' to ${completedEventsAmount + 1}`);
 }
 
 export async function getTopRankedUsers(
@@ -105,4 +126,28 @@ export async function giveAllUsers0Score(app: FastifyInstance) {
       console.log(`✅ Set score=0 for user=${user.user_id}`);
     }
   });
+}
+
+export async function updateUserBadges(
+  app: FastifyInstance,
+  user: User
+): Promise<boolean> {
+  const badgesToAdd: Badge[] = [];
+
+  badgeRules.forEach(rule => {
+    if ((!user.badges || !user.badges.some(badge => badge.name === rule.badge.name)) && rule.check(user)) {
+      badgesToAdd.push(rule.badge);
+    }
+  });
+
+  if (badgesToAdd.length > 0) {
+    const updatedBadges = [...(user.badges || []), ...badgesToAdd];
+    await app.db.collection('users').doc(user.user_id).update({ badges: updatedBadges });
+    console.log(`✅ Updated badges for user=${user.user_id}`);
+    user.badges = updatedBadges;
+    return true;
+  }
+
+  console.log(`No new badges for user=${user.user_id}`);
+  return false;
 }

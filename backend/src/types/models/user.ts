@@ -1,3 +1,8 @@
+export interface Badge {
+  name: string;
+  description: string;
+}
+
 export interface User {
   user_id: string;          
   first_name: string;
@@ -10,4 +15,6 @@ export interface User {
   applications: string[];
   events: string[];
   score: number;
+  badges?: Badge[];
+  completed_events?: number;
 }
