@@ -28,6 +28,7 @@ export async function createUser(
     password: hashedPassword,
     applications: [],
     events: [],
+    score: 0
   };
 
   await app.db.collection('users').doc(user.user_id).set(user);
@@ -95,12 +96,7 @@ export async function removeApplicationFromUser(
   console.log(`✅ Removed application='${application.application_id}' from user=${application.applicant_user_id}`);
 }
 
-let done = false;
-
 export async function giveAllUsers0Score(app: FastifyInstance) {
-  if (done) return;
-  done = true;
-
   const usersSnap = await app.db.collection('users').get();
   usersSnap.forEach(async (doc) => {
     const user = doc.data() as User;
