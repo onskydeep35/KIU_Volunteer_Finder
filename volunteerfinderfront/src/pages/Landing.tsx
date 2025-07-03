@@ -43,6 +43,7 @@ const Landing = () => {
     queryKey: ['events', user?.user_id],
     queryFn: ({ pageParam = 1 }) =>
       fetchEvents({ pageParam, userId: user ? String(user.user_id) : '' }),
+    initialPageParam: 1,
     getNextPageParam: (lastPage, pages) =>
       lastPage.length === 10 ? pages.length + 1 : undefined,
   })

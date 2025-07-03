@@ -1,6 +1,5 @@
 import { useForm } from 'react-hook-form'
 import { useToast } from '@/components/common/Toast'
-import { api } from '@/lib/api'
 
 interface Props {
   open: boolean

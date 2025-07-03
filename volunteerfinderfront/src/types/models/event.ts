@@ -1,5 +1,3 @@
-import { Application } from './application';
-
 export interface Event {
   event_id: string;
   creator_user_id: string;

@@ -8,7 +8,6 @@ import EditEvent from '@/pages/EditEvent'
 import MyEvents from '@/pages/MyEvents'
 import Volunteers from '@/pages/Volunteers'
 import MySubmissions from '@/pages/MySubmissions'
-import { Link } from 'react-router-dom'
 
 
 function App() {

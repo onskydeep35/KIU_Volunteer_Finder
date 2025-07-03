@@ -30,7 +30,7 @@ const MyEventCard = ({ event }: Props) => {
           {formatDate(event.start_date)} · {event.city}
         </p>
         <p className="text-xs text-gray-400">
-          Volunteers joined {event.volunteerCount ?? 0}
+          Volunteers joined {event.volunteer_form?.length ?? 0}
         </p>
       </div>
       <footer className="flex gap-3 p-4 pt-0 sm:p-4 sm:pt-4">

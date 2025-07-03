@@ -29,7 +29,7 @@ type Props = {
 
 const AuthModal = ({ open, onClose }: Props) => {
   const [mode, setMode] = useState<'login' | 'register'>('login')
-  const { login, register } = useAuth()
+  const { login } = useAuth()
 
   const {
     register: registerField,

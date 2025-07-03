@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "../models/application";
+import type { ApplicationStatus } from "../models/application";
 
 export interface UpdateApplicationStatusRequest {
   application_id: string;

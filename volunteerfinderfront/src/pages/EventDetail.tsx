@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import ApplicationModal from '@/components/event/ApplicationModal'
-import { api, type Event } from '@/lib/api'
+import { api } from '@/lib/api'
 import { useAuth } from '@/lib/useAuth'
 
 const clsx = (...classes: (string | false | null | undefined)[]) =>

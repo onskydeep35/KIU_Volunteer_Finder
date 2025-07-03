@@ -53,6 +53,7 @@ const CreateEvent = () => {
         country: data.country,
         region: data.region,
         city: data.city,
+        applications: []
       }
       const res = await api.createEvent(eventPayload)
       if (res.entity_id && res.entity_id !== 'NaN') {

@@ -13,35 +13,7 @@ import { UpdateEventRequest } from '../types/requests/updateEventRequest';
 import { updateEvent } from '../services/eventService';
 import { SearchEventsByTitleRequest } from '../types/requests/searchEventsByTitleRequest';
 
-
-
-interface PaginatedEventsResponse {
-  events: Event[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
 const events: FastifyPluginAsync = async (app) => {
-  // load event
-    // app.get<{ Querystring: LoadEventsRequest; Reply: Event[] }>(
-    //   '/loadMany',
-    //   async (req, reply) => {
-    //     try {
-    //       const events = await loadEvents(app, req.query);
-    //       return reply.send(events);
-    //     } catch (err: any) {
-    //       console.error('❌ Error in /events/list:', err);
-    //       return reply.code(500).send([]);
-    //     }
-    //   }
-    // );
-
     app.get<{ Querystring: SearchEventsByTitleRequest; Reply: Event[] }>(
       '/search',
       async (req, reply) => {
