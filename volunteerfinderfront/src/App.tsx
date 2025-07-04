@@ -6,6 +6,7 @@ import EventDetail from '@/pages/EventDetail'
 import CreateEvent from '@/pages/CreateEvent'
 import EditEvent from '@/pages/EditEvent'
 import MyEvents from '@/pages/MyEvents'
+import MyProfile from './pages/MyProfile'
 import Volunteers from '@/pages/Volunteers'
 import MySubmissions from '@/pages/MySubmissions'
 import RankingsPage from './pages/VolunteerRankings'
@@ -23,6 +24,7 @@ function App() {
           <Route path="/myevents" element={<MyEvents />} />
           <Route path="/mysubmissions" element={<MySubmissions />} />
           <Route path="/rankings" element={<RankingsPage />} />
+          <Route path="/myprofile" element={<MyProfile />} />
           <Route
             path="/events/:id/volunteers"
             element={<Volunteers />}

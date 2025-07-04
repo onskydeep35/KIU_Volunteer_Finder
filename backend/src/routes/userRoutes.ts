@@ -48,12 +48,12 @@ const users: FastifyPluginAsync = async (app) => {
   );
 
   app.post(
-    '/badgerefresh',
+    '/refreshbadges',
     async (req, reply) => {
       try {
-        const userId = req.body.user_id;
+        const entity_id = req.query.entity_id as string;
 
-        const snapshot = await app.db.collection('users').doc(userId).get();
+        const snapshot = await app.db.collection('users').doc(entity_id).get();
 
         if (!snapshot.exists) {
           return reply.code(404).send({ message: 'User not found' });

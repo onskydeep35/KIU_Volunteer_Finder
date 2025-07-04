@@ -44,6 +44,11 @@ export interface Application {
   updated_at?: string
 }
 
+export interface Badge {
+  name: string;
+  description: string;
+}
+
 export interface User {
   user_id: string;          
   first_name: string;
@@ -56,6 +61,8 @@ export interface User {
   applications: string[];
   events: string[];
   score: number;
+  badges?: Badge[];
+  completed_events?: number;
 }
 
 // API Functions
@@ -192,6 +199,15 @@ export const api = {
     
     const response = await fetch(`${API_BASE_URL}/users/top?${params.toString()}`)
     if (!response.ok) throw new Error('Failed to fetch top users')
+    return response.json()
+  },
+
+  async refreshUserBadges(userId: string): Promise<User> {
+    const response = await fetch(`${API_BASE_URL}/users/refreshbadges?entity_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    if (!response.ok) throw new Error('Failed to refresh user badges')
     return response.json()
   }
 }
